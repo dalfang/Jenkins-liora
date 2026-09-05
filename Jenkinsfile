@@ -104,3 +104,10 @@ pipeline {
         }
     }
 }
+post {
+    failure {
+        mail to: 'dalyn.fl@gmail.com',
+             subject: "${env.JOB_NAME} - Build #${env.BUILD_ID} failed",
+             body: "See the console output: ${env.BUILD_URL}"
+    }
+}
