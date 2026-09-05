@@ -12,7 +12,7 @@ pipeline {
         stage('Compose smoke tests') {
             steps {
                 sh '''
-                    docker compose up --build -d
+                    docker compose up --build -d --wait --wait-timeout 90
                     check_url() {
                       docker compose exec -T movie_service python - "$1" <<'PY'
 import sys

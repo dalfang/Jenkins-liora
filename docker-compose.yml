@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   movie_service:
@@ -12,7 +12,17 @@ services:
       - DATABASE_URI=postgresql://movie_db_username:movie_db_password@movie_db/movie_db_dev
       - CAST_SERVICE_HOST_URL=http://cast_service:8000/api/v1/casts/
     depends_on:
-      - movie_db
+      movie_db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'python -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/api/v1/checkapi'')"',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
 
   movie_db:
     image: postgres:12.1-alpine
@@ -22,6 +32,11 @@ services:
       - POSTGRES_USER=movie_db_username
       - POSTGRES_PASSWORD=movie_db_password
       - POSTGRES_DB=movie_db_dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U movie_db_username -d movie_db_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
 
   cast_service:
     build: ./cast-service
@@ -33,7 +48,17 @@ services:
     environment:
       - DATABASE_URI=postgresql://cast_db_username:cast_db_password@cast_db/cast_db_dev
     depends_on:
-      - cast_db
+      cast_db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'python -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/api/v1/checkapi'')"',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
 
   cast_db:
     image: postgres:12.1-alpine
@@ -43,6 +68,11 @@ services:
       - POSTGRES_USER=cast_db_username
       - POSTGRES_PASSWORD=cast_db_password
       - POSTGRES_DB=cast_db_dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cast_db_username -d cast_db_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
 
   nginx:
     image: nginx:latest
@@ -51,8 +81,10 @@ services:
     volumes:
       - ./nginx_config.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - cast_service
-      - movie_service
+      cast_service:
+        condition: service_healthy
+      movie_service:
+        condition: service_healthy
 
 volumes:
   postgres_data_movie:
