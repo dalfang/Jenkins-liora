@@ -6,6 +6,11 @@ metadata.create_all(engine)
 
 app = FastAPI(openapi_url="/api/v1/movies/openapi.json", docs_url="/api/v1/movies/docs")
 
+
+@app.get("/api/v1/checkapi")
+async def health_check():
+    return {"status": "ok"}
+
 @app.on_event("startup")
 async def startup():
     await database.connect()

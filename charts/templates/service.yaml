@@ -1,16 +1,27 @@
+{{- range $name := list "movie" "cast" }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "fastapiapp.fullname" . }}
-  labels:
-    {{- include "fastapiapp.labels" . | nindent 4 }}
+  name: {{ include "fastapiapp.fullname" $ }}-{{ $name }}
 spec:
-  type: {{ .Values.service.type }}
-  ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort }}
-      nodePort: {{ .Values.service.nodePort }}
-      protocol: TCP
-      name: http
   selector:
-    {{- include "fastapiapp.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ include "fastapiapp.fullname" $ }}-{{ $name }}
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+{{- end }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "fastapiapp.fullname" . }}-nginx
+spec:
+  type: {{ .Values.nginx.service.type }}
+  selector:
+    app.kubernetes.io/name: {{ include "fastapiapp.fullname" . }}-nginx
+  ports:
+    - port: {{ .Values.nginx.service.port }}
+      targetPort: 8080
+      {{- with .Values.nginx.service.nodePort }}
+      nodePort: {{ . }}
+      {{- end }}

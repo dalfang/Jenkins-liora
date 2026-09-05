@@ -1,0 +1,5 @@
+environment: prod
+movieService:
+  replicaCount: 2
+castService:
+  replicaCount: 2

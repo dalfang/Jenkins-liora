@@ -1,0 +1,40 @@
+{{- range $name := list "movie" "cast" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $name }}-db
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $name }}-db
+    spec:
+      containers:
+        - name: postgres
+          image: {{ $.Values.database.image }}
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: {{ (index $.Values.database $name).user | quote }}
+            - name: POSTGRES_PASSWORD
+              value: {{ (index $.Values.database $name).password | quote }}
+            - name: POSTGRES_DB
+              value: {{ (index $.Values.database $name).name | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}-db
+spec:
+  selector:
+    app.kubernetes.io/name: {{ $name }}-db
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+{{- end }}
