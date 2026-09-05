@@ -20,8 +20,9 @@ pipeline {
         stage('Docker Run') {
             steps {
                 sh '''
-                    docker run -d --rm -p 8081:80 --name jenkins-test \
+                    docker run -d --rm --name jenkins-test \
                       $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
+                    sleep 5
                 '''
             }
         }
@@ -29,7 +30,7 @@ pipeline {
         stage('Test Acceptance') {
             steps {
                 sh '''
-                    curl --fail --retry 10 --retry-connrefused http://127.0.0.1:8081/
+                    docker exec jenkins-test python -c 'import urllib.request; print(urllib.request.urlopen("http://127.0.0.1:80/", timeout=10).read().decode())'
                     docker rm -f jenkins-test
                 '''
             }
@@ -44,6 +45,7 @@ pipeline {
                     printf '%s' "$DOCKER_PASS" | docker login \
                       --username "$DOCKER_ID" --password-stdin
                     docker push $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
+                    sleep 5
                     docker logout
                 '''
             }
