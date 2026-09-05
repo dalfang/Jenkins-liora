@@ -3,9 +3,9 @@ pipeline {
 
     environment {
         DOCKER_NAMESPACE = 'dalfang'
-        IMAGE_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT ?: 'pending'}"
-        MOVIE_IMAGE = "${DOCKER_NAMESPACE}/movie-service"
-        CAST_IMAGE = "${DOCKER_NAMESPACE}/cast-service"
+        IMAGE_TAG = "build-${BUILD_NUMBER}"
+        MOVIE_IMAGE = 'dalfang/movie-service'
+        CAST_IMAGE = 'dalfang/cast-service'
     }
 
     stages {
