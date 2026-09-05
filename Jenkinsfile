@@ -1,4 +1,4 @@
-curl --fail --retry 10 --retry-connrefused http://localhost:8081/curl --fail --retry 10 --retry-connrefused http://127.0.0.1:8081/pipeline {
+pipeline {
     agent any
 
     environment {
@@ -29,7 +29,7 @@ curl --fail --retry 10 --retry-connrefused http://localhost:8081/curl --fail --r
         stage('Test Acceptance') {
             steps {
                 sh '''
-                    curl --fail --retry 10 retry-connrefused http://127.0.0.1:8081/
+                    curl --fail --retry 10 --retry-connrefused http://127.0.0.1:8081/
                     docker rm -f jenkins-test
                 '''
             }
