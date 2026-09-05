@@ -13,9 +13,28 @@ pipeline {
             steps {
                 sh '''
                     docker compose up --build -d
-                    curl --fail --retry 12 --retry-connrefused http://127.0.0.1:8001/api/v1/checkapi
-                    curl --fail --retry 12 --retry-connrefused http://127.0.0.1:8002/api/v1/checkapi
-                    curl --fail --retry 12 --retry-connrefused http://127.0.0.1:8080/api/v1/movies
+                    check_url() {
+                      docker compose exec -T movie_service python - "$1" <<'PY'
+import sys
+import time
+import urllib.request
+
+url = sys.argv[1]
+for attempt in range(30):
+    try:
+        with urllib.request.urlopen(url, timeout=2) as response:
+            if response.status == 200:
+                print("Healthy:", url)
+                break
+    except OSError:
+        if attempt == 29:
+            raise
+        time.sleep(1)
+PY
+                    }
+                    check_url http://127.0.0.1:8000/api/v1/checkapi
+                    check_url http://cast_service:8000/api/v1/checkapi
+                    check_url http://nginx:8080/api/v1/movies
                     docker compose down -v
                 '''
             }
